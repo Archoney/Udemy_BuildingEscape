@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/TriggerVolume.h"
 #include "DoorOpener.generated.h"
 
 
@@ -25,9 +26,14 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	AActor* m_owner;	
-	const FRotator m_openedRotation{ 0.f, -80.f, 0.f };
-	const FRotator m_closedRotation{ 0.f, 0.f, 0.f };
-	const float m_openDuration{1.f};
-	float m_openingTime{ 0.f };
+	AActor* m_owner;
+	UPROPERTY(EditAnywhere)
+	ATriggerVolume* pressurePlate;
+
+	UPROPERTY(VisibleAnywhere)
+	float angle{ 80.f };
+	const FRotator openedRotation{ 0.f, -angle, 0.f };
+	const FRotator closedRotation{ 0.f, 0.f, 0.f };
+	const float openingDuration{1.f};
+	float openingTime{ 0.f };
 };

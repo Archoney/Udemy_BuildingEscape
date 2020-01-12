@@ -27,17 +27,17 @@ void UDoorOpener::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (m_openingTime < m_openDuration)
+	if (openingTime < openingDuration)
 	{
-		m_openingTime += DeltaTime;
+		openingTime += DeltaTime;
 
-		if (m_openingTime > m_openDuration)
+		if (openingTime > openingDuration)
 		{
-			m_owner->SetActorRotation(m_openedRotation);
+			m_owner->SetActorRotation(openedRotation);
 		}
 		else
 		{
-			auto slerp = m_closedRotation + m_openingTime / m_openDuration * m_openedRotation;
+			auto slerp = closedRotation + openingTime / openingDuration * openedRotation;
 			m_owner->SetActorRotation(slerp);
 		}
 	}
