@@ -2,7 +2,9 @@
 
 
 #include "DoorOpener.h"
+#include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/PlayerController.h"
 
 // Sets default values for this component's properties
 UDoorOpener::UDoorOpener() : m_owner{ GetOwner() }
@@ -17,6 +19,7 @@ UDoorOpener::UDoorOpener() : m_owner{ GetOwner() }
 void UDoorOpener::BeginPlay()
 {
 	Super::BeginPlay();
+	actorAbleToOpen = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 
