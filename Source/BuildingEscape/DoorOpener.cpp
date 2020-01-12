@@ -7,7 +7,7 @@
 #include "GameFramework/PlayerController.h"
 
 // Sets default values for this component's properties
-UDoorOpener::UDoorOpener() : m_owner{ GetOwner() }
+UDoorOpener::UDoorOpener() : owner{ GetOwner() }
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -28,22 +28,25 @@ void UDoorOpener::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (pressurePlate->IsOverlappingActor(actorAbleToOpen))
-		openDoor = true;
-
-	if (openDoor && openingTime < openingDuration)
+	auto time = GetWorld()->GetTimeSeconds();
+	if ( pressurePlate->IsOverlappingActor(actorAbleToOpen))
 	{
-		openingTime += DeltaTime;
-
-		if (openingTime > openingDuration)
-		{
-			m_owner->SetActorRotation(openedRotation);
-		}
-		else
-		{
-			auto slerp = closedRotation + openingTime / openingDuration * openedRotation;
-			m_owner->SetActorRotation(slerp);
-		}
+		openDoor();
+		doorCloseTime = time + closeDelaySeconds;
 	}
+	else if ( time > doorCloseTime )
+	{
+		closeDoor();
+	}
+}
+
+void UDoorOpener::openDoor()
+{
+	owner->SetActorRotation(FRotator{ 0.f, openedAngle, 0.f });
+}
+
+void UDoorOpener::closeDoor()
+{
+	owner->SetActorRotation(FRotator{ 0.f, closedAngle, 0.f });
 }
 
