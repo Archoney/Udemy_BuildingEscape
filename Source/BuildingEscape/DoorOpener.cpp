@@ -17,8 +17,6 @@ UDoorOpener::UDoorOpener() : m_owner{ GetOwner() }
 void UDoorOpener::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
 }
 
 
@@ -27,7 +25,10 @@ void UDoorOpener::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (openingTime < openingDuration)
+	if (pressurePlate->IsOverlappingActor(actorAbleToOpen))
+		openDoor = true;
+
+	if (openDoor && openingTime < openingDuration)
 	{
 		openingTime += DeltaTime;
 

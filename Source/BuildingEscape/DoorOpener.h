@@ -27,13 +27,19 @@ public:
 
 private:
 	AActor* m_owner;
+
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* pressurePlate;
 
+	UPROPERTY(EditAnywhere)
+	AActor* actorAbleToOpen;
+
 	UPROPERTY(VisibleAnywhere)
 	float angle{ 80.f };
+
 	const FRotator openedRotation{ 0.f, -angle, 0.f };
 	const FRotator closedRotation{ 0.f, 0.f, 0.f };
 	const float openingDuration{1.f};
 	float openingTime{ 0.f };
+	bool openDoor{ false };
 };
