@@ -25,5 +25,11 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	void updatePlayerViewPoint();
 	void logPlayerViewPoint();
+	void drawDebugReach();
+
+	FVector location;
+	FRotator rotation;
+	float reachLength{ 100.f };
 };
