@@ -33,8 +33,7 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	updatePlayerViewPoint();
-	logPlayerViewPoint();
-	drawDebugReach();
+	traceForMovableObject();
 }
 
 void UGrabber::updatePlayerViewPoint()
@@ -42,18 +41,16 @@ void UGrabber::updatePlayerViewPoint()
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(location, rotation);
 }
 
-void UGrabber::logPlayerViewPoint()
+void UGrabber::traceForMovableObject()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Loacation: %s\tPosition: %s"), *location.ToString(), *rotation.ToString());
-}
-
-void UGrabber::drawDebugReach()
-{
-#if !defined(SHIPPING_DRAW_DEBUG_ERROR) || !SHIPPING_DRAW_DEBUG_ERROR
+	FHitResult traceResult;
 	auto lineStart = location;
 	auto lineEnd = location + reachLength * rotation.Vector();
-	auto lineColor = FColor( 255.f, 0.f, 255.f );
-	DrawDebugLine(GetWorld(), lineStart, lineEnd, lineColor, false, 0.f, 0, 10.f);
-#endif
-}
+	auto objectParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody);
+	auto params = FCollisionQueryParams(FName(TEXT("")), false, GetOwner());
+	GetWorld()->LineTraceSingleByObjectType(traceResult, lineStart, lineEnd, objectParams, params);
 
+	auto actorHit = traceResult.GetActor();
+	if (actorHit)
+		UE_LOG(LogTemp, Warning, TEXT("Object hit: %s"), *actorHit->GetName());
+}

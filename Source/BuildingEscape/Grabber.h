@@ -26,8 +26,7 @@ public:
 
 private:
 	void updatePlayerViewPoint();
-	void logPlayerViewPoint();
-	void drawDebugReach();
+	void traceForMovableObject();
 
 	FVector location;
 	FRotator rotation;
