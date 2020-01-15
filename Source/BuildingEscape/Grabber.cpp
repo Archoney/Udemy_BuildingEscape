@@ -12,8 +12,6 @@ UGrabber::UGrabber()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -22,8 +20,10 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	physicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+
+	if (!physicsHandle)
+		UE_LOG(LogTemp, Warning, TEXT("%s is missing PhysicsHandleComponent!"), *GetOwner()->GetName());
 }
 
 
@@ -32,17 +32,15 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	updatePlayerViewPoint();
 	traceForMovableObject();
-}
-
-void UGrabber::updatePlayerViewPoint()
-{
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(location, rotation);
 }
 
 void UGrabber::traceForMovableObject()
 {
+	FVector location;
+	FRotator rotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(location, rotation);
+
 	FHitResult traceResult;
 	auto lineStart = location;
 	auto lineEnd = location + reachLength * rotation.Vector();
