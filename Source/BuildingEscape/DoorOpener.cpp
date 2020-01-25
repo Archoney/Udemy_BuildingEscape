@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
+#include "Components/PrimitiveComponent.h"
 
 // Sets default values for this component's properties
 UDoorOpener::UDoorOpener() : owner{ GetOwner() }
@@ -19,7 +20,6 @@ UDoorOpener::UDoorOpener() : owner{ GetOwner() }
 void UDoorOpener::BeginPlay()
 {
 	Super::BeginPlay();
-	actorAbleToOpen = GetWorld()->GetFirstPlayerController()->GetPawn();
 }
 
 
@@ -29,7 +29,8 @@ void UDoorOpener::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	auto time = GetWorld()->GetTimeSeconds();
-	if ( pressurePlate->IsOverlappingActor(actorAbleToOpen))
+
+	if ( GetTotalMassOnTriggerPlate() > doorOpeningMass)
 	{
 		openDoor();
 		doorCloseTime = time + closeDelaySeconds;
@@ -48,5 +49,22 @@ void UDoorOpener::openDoor()
 void UDoorOpener::closeDoor()
 {
 	owner->SetActorRotation(FRotator{ 0.f, closedAngle, 0.f });
+}
+
+float UDoorOpener::GetTotalMassOnTriggerPlate() const
+{
+	TArray<UPrimitiveComponent*> overlappingComponents;
+	pressurePlate->GetOverlappingComponents(overlappingComponents);
+
+	auto totalMass{ 0.f };
+	if (overlappingComponents.Num())
+	{
+		for (auto component : overlappingComponents)
+		{
+			totalMass += component->GetMass();
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("%f total mass!"), totalMass);
+	return totalMass;
 }
 

@@ -29,13 +29,12 @@ private:
 	void openDoor();
 	void closeDoor();
 
+	float GetTotalMassOnTriggerPlate() const;
+
 	AActor* owner;
 
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* pressurePlate;
-
-	UPROPERTY(VisibleAnywhere)
-	AActor* actorAbleToOpen;
 
 	UPROPERTY(VisibleAnywhere)
 	float openedAngle{ -80.f };
@@ -45,6 +44,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float closeDelaySeconds{ 1.0f };
+
+	UPROPERTY(EditAnywhere)
+	float doorOpeningMass{ 90.0f };
 
 	float doorCloseTime{ 0.f };
 };
