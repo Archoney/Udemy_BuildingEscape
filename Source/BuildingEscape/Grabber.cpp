@@ -34,65 +34,53 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 	if (physicsHandle->GrabbedComponent)
 	{
-		FVector lineStart;
-		FVector lineEnd;
-		GetReachLine(lineStart, lineEnd);
-		physicsHandle->SetTargetLocation(lineEnd);
+		physicsHandle->SetTargetLocation(GetReachLine().lineEnd);
 	}
 }
 
 void UGrabber::FindPhysicsHandleComponent()
 {
 	physicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (physicsHandle)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PhysicsHandleComponent found in %s!"), *GetOwner()->GetName());
-	}
-	else
-	{
+
+	if (!physicsHandle)
 		UE_LOG(LogTemp, Warning, TEXT("%s is missing PhysicsHandleComponent!"), *GetOwner()->GetName());
-	}
 }
 
 void UGrabber::SetupInputComponent()
 {
 	input = GetOwner()->FindComponentByClass<UInputComponent>();
-	if (input)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InputComponent Found in %s!"), *GetOwner()->GetName());
 
-		input->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
-		input->BindAction("Grab", IE_Released, this, &UGrabber::Release);
-	}
-	else
-	{
+	if (!input)
 		UE_LOG(LogTemp, Warning, TEXT("%s is missing InputComponent!"), *GetOwner()->GetName());
-	}
+
+	input->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+	input->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 }
 
 FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
-	FVector lineStart;
-	FVector lineEnd;
-	GetReachLine(lineStart, lineEnd);
-
+	auto reachLine = GetReachLine();
 	auto objectParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody);
 	auto params = FCollisionQueryParams(FName(TEXT("")), false, GetOwner());
 
 	FHitResult traceResult;
-	GetWorld()->LineTraceSingleByObjectType(traceResult, lineStart, lineEnd, objectParams, params);
+	GetWorld()->LineTraceSingleByObjectType(
+		traceResult, 
+		reachLine.lineStart, 
+		reachLine.lineEnd, 
+		objectParams, 
+		params);
 
 	return traceResult;
 }
 
-void UGrabber::GetReachLine(FVector& out_lineStart, FVector& out_lineEnd) const
+UGrabber::ReachLine UGrabber::GetReachLine() const
 {
 	FVector location;
 	FRotator rotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(location, rotation);
 
-	out_lineStart = location;
-	out_lineEnd = location + reachLength * rotation.Vector();
+	return { location , location + reachLength * rotation.Vector() };
 }
 
 void UGrabber::Grab()

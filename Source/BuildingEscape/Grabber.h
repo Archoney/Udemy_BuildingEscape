@@ -27,10 +27,16 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	struct ReachLine
+	{
+		FVector lineStart;
+		FVector lineEnd;
+	};
+
 	void FindPhysicsHandleComponent();
 	void SetupInputComponent();
 	FHitResult GetFirstPhysicsBodyInReach() const;
-	void GetReachLine(FVector& out_lineStart, FVector& out_lineEnd) const;
+	ReachLine GetReachLine() const;
 	void Grab();
 	void Release();
 
