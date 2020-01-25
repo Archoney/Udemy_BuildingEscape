@@ -7,6 +7,7 @@
 #include "Engine/Public/DrawDebugHelpers.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Engine/Classes/Components/InputComponent.h"
+#include "Engine/Classes/Components/StaticMeshComponent.h"
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -26,11 +27,18 @@ void UGrabber::BeginPlay()
 	SetupInputComponent();
 }
 
-
 // Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (physicsHandle->GrabbedComponent)
+	{
+		FVector lineStart;
+		FVector lineEnd;
+		GetReachLine(lineStart, lineEnd);
+		physicsHandle->SetTargetLocation(lineEnd);
+	}
 }
 
 void UGrabber::FindPhysicsHandleComponent()
@@ -64,28 +72,51 @@ void UGrabber::SetupInputComponent()
 
 FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
-	FVector location;
-	FRotator rotation;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(location, rotation);
+	FVector lineStart;
+	FVector lineEnd;
+	GetReachLine(lineStart, lineEnd);
 
-	FHitResult traceResult;
-	auto lineStart = location;
-	auto lineEnd = location + reachLength * rotation.Vector();
 	auto objectParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody);
 	auto params = FCollisionQueryParams(FName(TEXT("")), false, GetOwner());
+
+	FHitResult traceResult;
 	GetWorld()->LineTraceSingleByObjectType(traceResult, lineStart, lineEnd, objectParams, params);
 
 	return traceResult;
 }
 
+void UGrabber::GetReachLine(FVector& out_lineStart, FVector& out_lineEnd) const
+{
+	FVector location;
+	FRotator rotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(location, rotation);
+
+	out_lineStart = location;
+	out_lineEnd = location + reachLength * rotation.Vector();
+}
+
 void UGrabber::Grab()
 {
-	auto actorInReach = GetFirstPhysicsBodyInReach().GetActor();
-	if (actorInReach)
-		UE_LOG(LogTemp, Warning, TEXT("Object hit: %s"), *actorInReach->GetName());
+	auto hitResult = GetFirstPhysicsBodyInReach();
+	auto actorHit = hitResult.GetActor();
+	if (actorHit)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Grab %s!"), *actorHit->GetName());
+		auto componentToGrab = hitResult.GetComponent();
+		physicsHandle->GrabComponentAtLocationWithRotation(
+			componentToGrab, 
+			NAME_None, 
+			componentToGrab->GetOwner()->GetActorLocation(), 
+			componentToGrab->GetOwner()->GetActorRotation()
+		);
+	}
 }
 
 void UGrabber::Release()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Release!"));
+	if (physicsHandle->GrabbedComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Release!"));
+		physicsHandle->ReleaseComponent();
+	}
 }
