@@ -5,6 +5,8 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/Public/DrawDebugHelpers.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Engine/Classes/Components/InputComponent.h"
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -20,10 +22,8 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
-	physicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-
-	if (!physicsHandle)
-		UE_LOG(LogTemp, Warning, TEXT("%s is missing PhysicsHandleComponent!"), *GetOwner()->GetName());
+	FindPhysicsHandleComponent();
+	SetupInputComponent();
 }
 
 
@@ -31,11 +31,38 @@ void UGrabber::BeginPlay()
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	traceForMovableObject();
 }
 
-void UGrabber::traceForMovableObject()
+void UGrabber::FindPhysicsHandleComponent()
+{
+	physicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (physicsHandle)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PhysicsHandleComponent found in %s!"), *GetOwner()->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s is missing PhysicsHandleComponent!"), *GetOwner()->GetName());
+	}
+}
+
+void UGrabber::SetupInputComponent()
+{
+	input = GetOwner()->FindComponentByClass<UInputComponent>();
+	if (input)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InputComponent Found in %s!"), *GetOwner()->GetName());
+
+		input->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+		input->BindAction("Grab", IE_Released, this, &UGrabber::Release);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s is missing InputComponent!"), *GetOwner()->GetName());
+	}
+}
+
+FHitResult UGrabber::GetFirstPhysicsBodyInReach() const
 {
 	FVector location;
 	FRotator rotation;
@@ -48,7 +75,17 @@ void UGrabber::traceForMovableObject()
 	auto params = FCollisionQueryParams(FName(TEXT("")), false, GetOwner());
 	GetWorld()->LineTraceSingleByObjectType(traceResult, lineStart, lineEnd, objectParams, params);
 
-	auto actorHit = traceResult.GetActor();
-	if (actorHit)
-		UE_LOG(LogTemp, Warning, TEXT("Object hit: %s"), *actorHit->GetName());
+	return traceResult;
+}
+
+void UGrabber::Grab()
+{
+	auto actorInReach = GetFirstPhysicsBodyInReach().GetActor();
+	if (actorInReach)
+		UE_LOG(LogTemp, Warning, TEXT("Object hit: %s"), *actorInReach->GetName());
+}
+
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Release!"));
 }
