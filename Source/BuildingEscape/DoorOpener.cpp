@@ -43,7 +43,7 @@ void UDoorOpener::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 
 void UDoorOpener::openDoor()
 {
-	owner->SetActorRotation(FRotator{ 0.f, openedAngle, 0.f });
+	onOpenEvent.Broadcast();
 }
 
 void UDoorOpener::closeDoor()
