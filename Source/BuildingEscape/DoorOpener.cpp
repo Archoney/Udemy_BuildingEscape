@@ -54,6 +54,7 @@ void UDoorOpener::closeDoor()
 float UDoorOpener::GetTotalMassOnTriggerPlate() const
 {
 	TArray<UPrimitiveComponent*> overlappingComponents;
+	check(pressurePlate && "Is an ATriggerVolume connected to the component?");
 	pressurePlate->GetOverlappingComponents(overlappingComponents);
 
 	auto totalMass{ 0.f };
@@ -64,7 +65,7 @@ float UDoorOpener::GetTotalMassOnTriggerPlate() const
 			totalMass += component->GetMass();
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%f total mass!"), totalMass);
+
 	return totalMass;
 }
 

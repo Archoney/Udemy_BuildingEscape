@@ -34,7 +34,7 @@ private:
 	AActor* owner;
 
 	UPROPERTY(EditAnywhere)
-	ATriggerVolume* pressurePlate;
+	ATriggerVolume* pressurePlate {	nullptr	};
 
 	UPROPERTY(VisibleAnywhere)
 	float openedAngle{ -80.f };
